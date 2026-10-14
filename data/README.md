@@ -1,0 +1,1 @@
+Download `energydata_complete.csv` from https://www.kaggle.com/datasets/loveall/appliances-energy-prediction and place it here. Raw CSV is not included in this scaffold.
