@@ -54,19 +54,19 @@ F-test,Tdewpoint,False
 F-test,rv1,False
 F-test,rv2,False
 Mutual Information,lights,True
-Mutual Information,T1,False
+Mutual Information,T1,True
 Mutual Information,RH_1,True
-Mutual Information,T2,True
+Mutual Information,T2,False
 Mutual Information,RH_2,False
 Mutual Information,T3,True
-Mutual Information,RH_3,False
-Mutual Information,T4,False
+Mutual Information,RH_3,True
+Mutual Information,T4,True
 Mutual Information,RH_4,True
 Mutual Information,T5,True
 Mutual Information,RH_5,True
 Mutual Information,T6,False
-Mutual Information,RH_6,True
-Mutual Information,T7,True
+Mutual Information,RH_6,False
+Mutual Information,T7,False
 Mutual Information,RH_7,True
 Mutual Information,T8,True
 Mutual Information,RH_8,True
@@ -87,7 +87,7 @@ RFE,T2,True
 RFE,RH_2,True
 RFE,T3,True
 RFE,RH_3,True
-RFE,T4,True
+RFE,T4,False
 RFE,RH_4,False
 RFE,T5,False
 RFE,RH_5,False
@@ -101,7 +101,7 @@ RFE,T9,True
 RFE,RH_9,True
 RFE,T_out,True
 RFE,Press_mm_hg,False
-RFE,RH_out,False
+RFE,RH_out,True
 RFE,Windspeed,False
 RFE,Visibility,False
 RFE,Tdewpoint,True
@@ -173,18 +173,18 @@ LassoCV ranking,RH_4,True
 LassoCV ranking,T5,True
 LassoCV ranking,RH_5,True
 LassoCV ranking,T6,True
-LassoCV ranking,RH_6,True
-LassoCV ranking,T7,True
-LassoCV ranking,RH_7,True
+LassoCV ranking,RH_6,False
+LassoCV ranking,T7,False
+LassoCV ranking,RH_7,False
 LassoCV ranking,T8,False
-LassoCV ranking,RH_8,False
+LassoCV ranking,RH_8,True
 LassoCV ranking,T9,False
-LassoCV ranking,RH_9,False
+LassoCV ranking,RH_9,True
 LassoCV ranking,T_out,False
 LassoCV ranking,Press_mm_hg,False
 LassoCV ranking,RH_out,False
 LassoCV ranking,Windspeed,False
-LassoCV ranking,Visibility,False
+LassoCV ranking,Visibility,True
 LassoCV ranking,Tdewpoint,False
 LassoCV ranking,rv1,False
 LassoCV ranking,rv2,False

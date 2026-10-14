@@ -16,7 +16,7 @@ streamlit run app/streamlit_app.py
 
 從 https://www.kaggle.com/datasets/loveall/appliances-energy-prediction 取得 `energydata_complete.csv`，放至 `data/`；原始資料預設不進 Git。
 
-資料集原始欄位超過 20 個。此研究從原始資料選出 **16 個候選特徵**，若老師要求原始資料本身 10–20 個特徵，須先取得老師允許。
+資料集使用全部 27 個數值候選特徵，Target 為 Appliances，date 用於時間排序。各特徵選擇方法從 27 個特徵中選出 15 個特徵，Baseline 則保留全部 27 個特徵。
 
 ## 三、建模工作流程與提交節點
 
@@ -24,7 +24,7 @@ streamlit run app/streamlit_app.py
 |---|---|---|
 | 專案初始化 | `chore: initialize project skeleton` | Streamlit 5 頁可以啟動 |
 | EDA 與切分 | `feat: add chronological data pipeline` | 欄位、缺失值、切分比例可核對 |
-| 7 種 Feature Selection | `feat: implement seven feature selectors` | 訓練資料選 10 特徵且無洩漏 |
+| 7 種 Feature Selection | `feat: implement seven feature selectors` | 訓練資料選 15 特徵且無洩漏 |
 | 4 種 Loss 模型 | `feat: compare four linear objectives` | 32 組驗證結果可重現 |
 | 圖表輸出 | `feat: export experiment charts and metrics` | RMSE heatmap、ranking、interval 圖 |
 | 網站整合 | `feat: connect experimental results to app` | 頁面顯示真實 CSV 結果 |
@@ -97,4 +97,4 @@ Streamlit 文件：
 - [ ] 網站的結果來自真正 CSV，不能是假數據
 - [ ] GitHub 原始碼可讀、可安裝、可重現
 - [ ] 網站 URL 可以開啟、五頁都正常
-- [ ] 報告說明原始資料超過 20 特徵、實驗只用 16 特徵
+- [ ] 報告說明使用全部 27 個候選特徵、特徵選擇方法篩選出 15 個特徵

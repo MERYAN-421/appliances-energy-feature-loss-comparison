@@ -1,0 +1,11 @@
+{
+  "n_samples": 19735,
+  "n_features": 27,
+  "target_name": "Appliances",
+  "target_mean": 97.6949581960983,
+  "target_std": 102.52489053740624,
+  "target_median": 60.0,
+  "target_min": 10.0,
+  "target_max": 1080.0,
+  "total_missing": 0
+}

@@ -1,28 +1,43 @@
+import json
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from utils.common import DATA_FILE, DATASET_URL, FEATURES, TARGET, read_csv
+from utils.common import DATA_FILE, DATASET_URL, FEATURES, TARGET, METRICS, FIGURES, read_csv
 
 st.title("📊 資料集總覽與探索性分析 (Dataset Overview & EDA)")
 st.caption(f"資料來源：[Kaggle — Appliances Energy Prediction]({DATASET_URL})")
 
 st.markdown("""
-本專案直接讀入 Kaggle 原始資料中的 **全部 27 個數值候選特徵**，預測目標為家電用電量 `Appliances` (Wh)。
+本專案評估 Kaggle 原始資料中的 **全部 27 個數值候選特徵**，預測目標為家電用電量 `Appliances` (Wh)。
 記錄間隔為每 10 分鐘一筆，涵蓋近 4.5 個月的連續時間序列。
 """)
 
-if not DATA_FILE.exists():
-    st.error(f"找不到資料檔案：`{DATA_FILE}`。請將 Kaggle 下載的 `energydata_complete.csv` 放入 `data/` 目錄。")
-    st.stop()
+has_local_raw = DATA_FILE.exists()
 
-df = read_csv(DATA_FILE)
+if not has_local_raw:
+    st.info("☁️ **雲端展示模式 (Cloud Standalone Mode)**：本地未包含 12MB raw CSV，直接載入預先運算之真實 EDA 統計資料與視覺化成果。")
+
+# Load summary KPI data
+summary_file = METRICS / "eda_summary.json"
+summary_info = {}
+if summary_file.exists():
+    try:
+        with open(summary_file, "r", encoding="utf-8") as f:
+            summary_info = json.load(f)
+    except Exception:
+        pass
 
 # KPI Cards
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
-kpi1.metric("總樣本數", f"{len(df):,} 筆")
+total_samples = summary_info.get("n_samples", 19735)
+total_features = summary_info.get("n_features", len(FEATURES))
+total_missing = summary_info.get("total_missing", 0)
+
+kpi1.metric("總樣本數", f"{total_samples:,} 筆")
 kpi2.metric("預測目標", TARGET)
-kpi3.metric("數值候選特徵數", f"{len(FEATURES)} 個")
-kpi4.metric("缺失值 (Missing)", f"{df.isna().sum().sum()} 個")
+kpi3.metric("數值候選特徵數", f"{total_features} 個")
+kpi4.metric("缺失值 (Missing)", f"{total_missing} 個")
 
 st.markdown("---")
 
@@ -34,47 +49,95 @@ with tab1:
     家電用電量呈現顯著的**右偏態（Right-Skewed）**分布：平時維持在低能耗基準線（50–100 Wh），
     少數烹飪、洗烘衣等高峰時段會衝高至 800+ Wh。這也是不同損失函數（如 OLS vs Huber/L1）表現產生差異的關鍵原因。
     """)
-    fig_hist = px.histogram(
-        df,
-        x=TARGET,
-        nbins=60,
-        marginal="box",
-        title="Appliances 用電量 (Wh) 分布與箱形圖",
-        color_discrete_sequence=["#277DA1"],
-    )
-    fig_hist.update_layout(
-        xaxis_title="Appliances (Wh)",
-        yaxis_title="次數 (Frequency)",
-        template="plotly_white",
-    )
-    st.plotly_chart(fig_hist, use_container_width=True)
+
+    # Try plotting interactive Plotly from local CSV or target sample CSV
+    target_sample_path = METRICS / "target_samples.csv"
+    if has_local_raw:
+        df_target = read_csv(DATA_FILE)[[TARGET]]
+        fig_hist = px.histogram(
+            df_target,
+            x=TARGET,
+            nbins=60,
+            marginal="box",
+            title="Appliances 用電量 (Wh) 分布與箱形圖 (全量樣本)",
+            color_discrete_sequence=["#277DA1"],
+        )
+        fig_hist.update_layout(xaxis_title="Appliances (Wh)", yaxis_title="次數 (Frequency)", template="plotly_white")
+        st.plotly_chart(fig_hist, use_container_width=True)
+    elif target_sample_path.exists():
+        df_target = read_csv(target_sample_path)
+        fig_hist = px.histogram(
+            df_target,
+            x=TARGET,
+            nbins=50,
+            marginal="box",
+            title="Appliances 用電量 (Wh) 分布與箱形圖 (代表性取樣樣本)",
+            color_discrete_sequence=["#277DA1"],
+        )
+        fig_hist.update_layout(xaxis_title="Appliances (Wh)", yaxis_title="次數 (Frequency)", template="plotly_white")
+        st.plotly_chart(fig_hist, use_container_width=True)
+    else:
+        # Fallback to static figure
+        target_fig_path = FIGURES / "target_distribution.png"
+        if target_fig_path.exists():
+            st.image(str(target_fig_path), caption="Appliances 用電量分布圖 (直方圖與箱形圖)", use_column_width=True)
 
 with tab2:
     st.subheader("27 個候選特徵與目標變數的 Pearson 相關性")
-    corr_series = df[FEATURES + [TARGET]].corr(numeric_only=True)[TARGET].drop(TARGET).sort_values()
-    corr_df = pd.DataFrame({"Feature": corr_series.index, "Correlation": corr_series.values})
+    corr_file = METRICS / "eda_correlations.csv"
     
-    fig_corr = px.bar(
-        corr_df,
-        x="Correlation",
-        y="Feature",
-        orientation="h",
-        color="Correlation",
-        color_continuous_scale="RdBu",
-        title="各候選特徵與 Appliances 之線性相關係數 (Pearson r)",
-    )
-    fig_corr.update_layout(
-        xaxis_title="Pearson 相關係數",
-        yaxis_title="特徵名稱",
-        template="plotly_white",
-        height=700,
-    )
-    st.plotly_chart(fig_corr, use_container_width=True)
-    st.caption("提示：照明用電 (`lights`)、室外溫度 (`T_out`)、生活區溫度與特定濕度感測器具有較高相關性。")
+    if has_local_raw:
+        df_full = read_csv(DATA_FILE)
+        corr_series = df_full[FEATURES + [TARGET]].corr(numeric_only=True)[TARGET].drop(TARGET).sort_values()
+        corr_df = pd.DataFrame({"Feature": corr_series.index, "Correlation": corr_series.values})
+    elif corr_file.exists():
+        corr_df = read_csv(corr_file)
+    else:
+        corr_df = None
+
+    if corr_df is not None:
+        fig_corr = px.bar(
+            corr_df,
+            x="Correlation",
+            y="Feature",
+            orientation="h",
+            color="Correlation",
+            color_continuous_scale="RdBu",
+            title="各候選特徵與 Appliances 之線性相關係數 (Pearson r)",
+        )
+        fig_corr.update_layout(
+            xaxis_title="Pearson 相關係數",
+            yaxis_title="特徵名稱",
+            template="plotly_white",
+            height=700,
+        )
+        st.plotly_chart(fig_corr, use_container_width=True)
+        st.caption("提示：照明用電 (`lights`)、室外溫度 (`T_out`)、生活區溫度與特定濕度感測器具有較高相關性。")
+
+    # Full matrix static preview if available
+    corr_heatmap_path = FIGURES / "correlation_heatmap.png"
+    if corr_heatmap_path.exists():
+        with st.expander("🔍 檢視完整 27 個特徵 × 27 個特徵共線性全熱圖", expanded=False):
+            st.image(str(corr_heatmap_path), caption="27 特徵相關性矩陣全圖", use_column_width=True)
 
 with tab3:
     st.subheader("原始資料前 10 筆預覽")
-    st.dataframe(df.head(10), use_container_width=True)
-    
+    sample_file = METRICS / "sample_data.csv"
+    if has_local_raw:
+        st.dataframe(read_csv(DATA_FILE).head(10), use_container_width=True)
+    elif sample_file.exists():
+        st.dataframe(read_csv(sample_file).head(10), use_container_width=True)
+    else:
+        st.info("尚無樣本預覽資料。")
+
     st.subheader("27 個特徵之敘述統計摘要")
-    st.dataframe(df[FEATURES].describe().T[["mean", "std", "min", "25%", "50%", "75%", "max"]], use_container_width=True)
+    stats_file = METRICS / "eda_stats.csv"
+    if has_local_raw:
+        st.dataframe(read_csv(DATA_FILE)[FEATURES].describe().T[["mean", "std", "min", "25%", "50%", "75%", "max"]], use_container_width=True)
+    elif stats_file.exists():
+        stats_df = read_csv(stats_file)
+        if "Unnamed: 0" in stats_df.columns:
+            stats_df = stats_df.set_index("Unnamed: 0")
+        st.dataframe(stats_df, use_container_width=True)
+    else:
+        st.info("尚無敘述統計資料。")

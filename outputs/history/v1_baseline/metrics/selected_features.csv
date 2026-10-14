@@ -1,0 +1,217 @@
+feature_selection,feature,selected
+Pearson,lights,True
+Pearson,T1,True
+Pearson,RH_1,True
+Pearson,T2,True
+Pearson,RH_2,True
+Pearson,T3,True
+Pearson,RH_3,False
+Pearson,T4,True
+Pearson,RH_4,False
+Pearson,T5,False
+Pearson,RH_5,False
+Pearson,T6,True
+Pearson,RH_6,True
+Pearson,T7,False
+Pearson,RH_7,True
+Pearson,T8,True
+Pearson,RH_8,True
+Pearson,T9,False
+Pearson,RH_9,True
+Pearson,T_out,True
+Pearson,Press_mm_hg,False
+Pearson,RH_out,True
+Pearson,Windspeed,False
+Pearson,Visibility,False
+Pearson,Tdewpoint,False
+Pearson,rv1,False
+Pearson,rv2,False
+F-test,lights,True
+F-test,T1,True
+F-test,RH_1,True
+F-test,T2,True
+F-test,RH_2,True
+F-test,T3,True
+F-test,RH_3,False
+F-test,T4,True
+F-test,RH_4,False
+F-test,T5,False
+F-test,RH_5,False
+F-test,T6,True
+F-test,RH_6,True
+F-test,T7,False
+F-test,RH_7,True
+F-test,T8,True
+F-test,RH_8,True
+F-test,T9,False
+F-test,RH_9,True
+F-test,T_out,True
+F-test,Press_mm_hg,False
+F-test,RH_out,True
+F-test,Windspeed,False
+F-test,Visibility,False
+F-test,Tdewpoint,False
+F-test,rv1,False
+F-test,rv2,False
+Mutual Information,lights,True
+Mutual Information,T1,False
+Mutual Information,RH_1,True
+Mutual Information,T2,True
+Mutual Information,RH_2,False
+Mutual Information,T3,True
+Mutual Information,RH_3,False
+Mutual Information,T4,False
+Mutual Information,RH_4,True
+Mutual Information,T5,True
+Mutual Information,RH_5,True
+Mutual Information,T6,False
+Mutual Information,RH_6,True
+Mutual Information,T7,True
+Mutual Information,RH_7,True
+Mutual Information,T8,True
+Mutual Information,RH_8,True
+Mutual Information,T9,True
+Mutual Information,RH_9,True
+Mutual Information,T_out,False
+Mutual Information,Press_mm_hg,True
+Mutual Information,RH_out,False
+Mutual Information,Windspeed,False
+Mutual Information,Visibility,False
+Mutual Information,Tdewpoint,False
+Mutual Information,rv1,False
+Mutual Information,rv2,False
+RFE,lights,True
+RFE,T1,True
+RFE,RH_1,True
+RFE,T2,True
+RFE,RH_2,True
+RFE,T3,True
+RFE,RH_3,True
+RFE,T4,True
+RFE,RH_4,False
+RFE,T5,False
+RFE,RH_5,False
+RFE,T6,True
+RFE,RH_6,False
+RFE,T7,True
+RFE,RH_7,False
+RFE,T8,False
+RFE,RH_8,True
+RFE,T9,True
+RFE,RH_9,True
+RFE,T_out,True
+RFE,Press_mm_hg,False
+RFE,RH_out,False
+RFE,Windspeed,False
+RFE,Visibility,False
+RFE,Tdewpoint,True
+RFE,rv1,False
+RFE,rv2,False
+Forward SFS,lights,False
+Forward SFS,T1,False
+Forward SFS,RH_1,True
+Forward SFS,T2,True
+Forward SFS,RH_2,False
+Forward SFS,T3,True
+Forward SFS,RH_3,True
+Forward SFS,T4,False
+Forward SFS,RH_4,False
+Forward SFS,T5,True
+Forward SFS,RH_5,False
+Forward SFS,T6,False
+Forward SFS,RH_6,False
+Forward SFS,T7,True
+Forward SFS,RH_7,False
+Forward SFS,T8,False
+Forward SFS,RH_8,True
+Forward SFS,T9,True
+Forward SFS,RH_9,True
+Forward SFS,T_out,False
+Forward SFS,Press_mm_hg,True
+Forward SFS,RH_out,False
+Forward SFS,Windspeed,True
+Forward SFS,Visibility,True
+Forward SFS,Tdewpoint,True
+Forward SFS,rv1,True
+Forward SFS,rv2,True
+Backward SFS,lights,False
+Backward SFS,T1,False
+Backward SFS,RH_1,False
+Backward SFS,T2,True
+Backward SFS,RH_2,True
+Backward SFS,T3,True
+Backward SFS,RH_3,True
+Backward SFS,T4,False
+Backward SFS,RH_4,False
+Backward SFS,T5,True
+Backward SFS,RH_5,False
+Backward SFS,T6,True
+Backward SFS,RH_6,True
+Backward SFS,T7,False
+Backward SFS,RH_7,True
+Backward SFS,T8,False
+Backward SFS,RH_8,True
+Backward SFS,T9,False
+Backward SFS,RH_9,True
+Backward SFS,T_out,False
+Backward SFS,Press_mm_hg,True
+Backward SFS,RH_out,True
+Backward SFS,Windspeed,False
+Backward SFS,Visibility,True
+Backward SFS,Tdewpoint,False
+Backward SFS,rv1,True
+Backward SFS,rv2,True
+LassoCV ranking,lights,True
+LassoCV ranking,T1,True
+LassoCV ranking,RH_1,True
+LassoCV ranking,T2,True
+LassoCV ranking,RH_2,True
+LassoCV ranking,T3,True
+LassoCV ranking,RH_3,True
+LassoCV ranking,T4,True
+LassoCV ranking,RH_4,True
+LassoCV ranking,T5,True
+LassoCV ranking,RH_5,True
+LassoCV ranking,T6,True
+LassoCV ranking,RH_6,True
+LassoCV ranking,T7,True
+LassoCV ranking,RH_7,True
+LassoCV ranking,T8,False
+LassoCV ranking,RH_8,False
+LassoCV ranking,T9,False
+LassoCV ranking,RH_9,False
+LassoCV ranking,T_out,False
+LassoCV ranking,Press_mm_hg,False
+LassoCV ranking,RH_out,False
+LassoCV ranking,Windspeed,False
+LassoCV ranking,Visibility,False
+LassoCV ranking,Tdewpoint,False
+LassoCV ranking,rv1,False
+LassoCV ranking,rv2,False
+Baseline,lights,True
+Baseline,T1,True
+Baseline,RH_1,True
+Baseline,T2,True
+Baseline,RH_2,True
+Baseline,T3,True
+Baseline,RH_3,True
+Baseline,T4,True
+Baseline,RH_4,True
+Baseline,T5,True
+Baseline,RH_5,True
+Baseline,T6,True
+Baseline,RH_6,True
+Baseline,T7,True
+Baseline,RH_7,True
+Baseline,T8,True
+Baseline,RH_8,True
+Baseline,T9,True
+Baseline,RH_9,True
+Baseline,T_out,True
+Baseline,Press_mm_hg,True
+Baseline,RH_out,True
+Baseline,Windspeed,True
+Baseline,Visibility,True
+Baseline,Tdewpoint,True
+Baseline,rv1,True
+Baseline,rv2,True
