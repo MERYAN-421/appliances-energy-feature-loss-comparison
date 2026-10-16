@@ -1,5 +1,9 @@
 # Appliance Energy Prediction: Feature Selection × Loss Functions
 
+**線上網站：[Regression Studio — 迴歸探索實驗室](https://meryan-421.github.io/appliances-energy-feature-loss-comparison/)**
+
+GitHub Pages 部署已成功。網站包含兩種迴歸問題、特徵選擇與 K 分析、OLS 解釋、即時預測、自訂 CSV 分析及原始 32 模型研究。
+
 > A reproducible CRISP-DM machine learning project comparing **7 feature-selection strategies**, **4 linear regression loss objectives**, and an unselected baseline on Kaggle's *Appliances Energy Prediction* dataset.
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io)
@@ -222,5 +226,9 @@ A separate static site is available in `web/`, preserving the Python project.
 It includes both regression problems, model comparisons, browser-only live
 prediction, and custom CSV analysis using a browser Python worker.
 See [GitHub Pages activation and architecture](docs/GITHUB_PAGES.md).
-The deployment workflow is **Deploy Regression Studio to GitHub Pages**;
-repository administrators must select **Settings → Pages → GitHub Actions**.
+The deployment workflow is **Deploy Regression Studio to GitHub Pages**.
+The administrator has enabled Pages and supplied a successful deployment result
+for commit `eb4a79e` ([deployment run](https://github.com/MERYAN-421/appliances-energy-feature-loss-comparison/actions/runs/38879955842)).
+Future changes to `web/` on the configured branches trigger automatic deployment.
+Custom CSV data stays in the browser; the first analysis downloads the Python
+runtime and may take 30–90 seconds. No separate Streamlit server is required.

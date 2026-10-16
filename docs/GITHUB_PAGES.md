@@ -1,5 +1,33 @@
 # GitHub Pages / Regression Studio
 
+## Current deployment
+
+- Website: https://meryan-421.github.io/appliances-energy-feature-loss-comparison/
+- Administrator-provided Actions screenshot confirms **Success** for commit
+  `eb4a79e`, run [38879955842](https://github.com/MERYAN-421/appliances-energy-feature-loss-comparison/actions/runs/38879955842), attempt 3.
+- Published source branch: `feat/final-regression-explorer`; main is unchanged.
+- Local validation: 14 Python tests, JavaScript core checks and real-browser
+  upload, Python-worker training, URL loading, prediction and mobile checks passed.
+- The screenshot confirms deployment success; it does not replace a functional
+  check of the public URL from the visitor’s network.
+
+The Actions Node.js deprecation warning and Ubuntu runner migration notice did
+not fail this deployment. They are maintenance notices, not application errors.
+
+## Using the website
+
+1. Choose **迴歸探索器**, then select either regression problem and a method/K.
+2. Review validation curves, OLS coefficients and live predictions. Test
+   diagnostics are restricted to the K chosen by validation performance.
+3. Choose **自訂 Dataset** to upload a CSV or load an approved public CSV URL;
+   select the numeric target and predictors, then start browser-only analysis.
+4. Choose **原始 32 模型研究** for all four loss objectives and the original
+   best model’s calibrated prediction interval.
+
+If an old tab shows “Site not found” after deployment, allow propagation and
+perform a hard refresh (Ctrl+Shift+R). For actual workflow failures, inspect the
+red failed step instead of treating yellow maintenance notices as errors.
+
 ## Enable the site (repository administrator)
 
 The static website is in `web/`. No Streamlit hosting, paid server, API token or
