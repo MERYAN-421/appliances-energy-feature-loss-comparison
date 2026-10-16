@@ -17,16 +17,36 @@ def sweep(df,target,chronological,method):
     return pd.DataFrame([dict(K=k,**r['metrics']) for k,r in zip(ks,results)]), results
 
 def render_explorer(df,target,chronological=False,key='explorer',unit=''):
-    st.dataframe(df.head(10),hide_index=True)
+    with st.expander('資料預覽與欄位類型'):
+        st.dataframe(df.head(10),hide_index=True)
+        st.dataframe(pd.DataFrame({'欄位':df.columns,'類型':df.dtypes.astype(str).values}),hide_index=True)
     st.caption(f'{len(df):,} 列 · {len(df.columns)} 欄 · 目標：{target} {unit}')
     try:
-        ctx = prepare(df,target,chronological) if key.startswith('custom') else cached_context(df,target,chronological)
+        if key.startswith('custom'):
+            if key+'_context' not in st.session_state:
+                st.session_state[key+'_context'] = prepare(df,target,chronological)
+            ctx = st.session_state[key+'_context']
+        else:
+            ctx = cached_context(df,target,chronological)
         p = len(ctx['names'])
         methods = METHODS if len(ctx['train'])<=1000 and p<=8 else ['Lasso','RFE','ElasticNet','F-test']
         with st.form(key+'_fit'):
             method = st.selectbox('特徵選擇演算法',methods,key=key+'_method')
             st.caption('Lasso／ElasticNet 使用固定正則化強度排名後取 Top K，再擬合 OLS。K 指編碼後的特徵數，State 可拆成數個 dummy。')
             run = st.form_submit_button('計算／更新 K 分析',type='primary')
+        if len(ctx['train']) <= 1000 and p <= 8:
+            if st.button('比較全部五種方法',key=key+'_compare'):
+                with st.spinner('比較五種特徵選擇方法…'):
+                    rows = []
+                    for m in METHODS[:5]:
+                        for count in range(1,p+1):
+                            fitted = fit_model(ctx,m,count)
+                            rows.append(dict(演算法=m,K=count,**fitted['metrics']))
+                    st.session_state[key+'_comparison'] = pd.DataFrame(rows)
+            if key+'_comparison' in st.session_state:
+                comparison = st.session_state[key+'_comparison']
+                st.plotly_chart(px.line(comparison,x='K',y='RMSE',color='演算法',markers=True,title='五種方法：Validation RMSE'))
+                st.dataframe(comparison,hide_index=True)
         state_key = key+'_result'
         if run:
             with st.spinner('僅以訓練資料選特徵，計算驗證集表現…'):
@@ -63,8 +83,8 @@ def render_explorer(df,target,chronological=False,key='explorer',unit=''):
         try:
             coef,f,pvalue = inference(ctx['train'][:,cols],ctx['y'][ctx['ti']],result['names'],model)
             st.write(f'訓練集整體 F-statistic = {f:.4g}；p-value = {pvalue:.4g}')
-            st.dataframe(coef,hide_index=True)
-        except ValueError as exc:
+            st.dataframe(coef.style.format({c:'{:.5g}' for c in coef.columns if c!='特徵'},na_rep='—'),hide_index=True)
+        except (ValueError,np.linalg.LinAlgError) as exc:
             st.warning(str(exc))
             st.dataframe(pd.DataFrame({'特徵':result['names'],'係數':model.coef_}))
         st.warning('經典 OLS 推論假設線性、獨立且同質變異誤差；特徵選擇後的 p-value／信賴區間未校正選擇偏差，不代表因果。時間序列尤其可能違反獨立性。係數信賴區間不是預測區間。')
@@ -104,5 +124,12 @@ def render_explorer(df,target,chronological=False,key='explorer',unit=''):
                 winner = fits[table.K.tolist().index(best)]
                 test_pred = winner['model'].predict(ctx['pre'].transform(ctx['X'].iloc[ctx['test']])[:,winner['cols']])
                 st.json(metrics(ctx['y'][ctx['test']],test_pred,best))
+                td = diagnostics(ctx['y'][ctx['test']],test_pred)
+                td.insert(0,'資料列位置',ctx['test'])
+                st.dataframe(td.sort_values('絕對誤差',ascending=False),hide_index=True)
+                a,b = st.columns(2)
+                a.plotly_chart(px.scatter(td,x='實際值',y='預測值',title='Test Actual vs. Predicted'))
+                b.plotly_chart(px.scatter(td,x='預測值',y='殘差',title='Test Residuals'))
+                st.plotly_chart(px.histogram(td,x='殘差',title='Test 殘差分布'))
     except (ValueError,TypeError,KeyError) as exc:
         st.error(f'無法完成分析：{exc}')

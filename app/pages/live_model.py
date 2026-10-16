@@ -18,7 +18,8 @@ names = bundle['selected_features']
 imputer, scaler, reg = model.named_steps['imputer'], model.named_steps['scaler'], model.named_steps['regressor']
 coef = reg.coef_/scaler.scale_
 intercept = reg.intercept_-np.dot(coef,scaler.mean_)
-st.latex(r'\widehat{Appliances} = '+f'{intercept:.5g}'+''.join(f'{b:+.5g}\\,{n.replace("_",r"\_")}' for n,b in zip(names,coef)))
+escaped_names = [name.replace('_', r'\_') for name in names]
+st.latex(r'\widehat{Appliances} = '+f'{intercept:.5g}'+''.join(f'{b:+.5g}\\,{name}' for name,b in zip(escaped_names,coef)))
 st.dataframe(pd.DataFrame({'特徵':names,'原始單位係數':coef}),hide_index=True)
 st.info('係數已由標準化空間轉回原始單位。模型於 Train + Validation 擬合；預設輸入取自此擬合資料的中位數（已儲存在 imputer）。')
 with st.form('original_prediction'):

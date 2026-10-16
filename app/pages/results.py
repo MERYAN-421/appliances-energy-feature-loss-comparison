@@ -373,12 +373,12 @@ with tab3:
             )
             st.plotly_chart(fig_hist, use_container_width=True)
 
-        st.error("""
+        st.error(f"""
         🔍 **統計診斷與物理現象解讀：**
         1. **異質變異數現象 (Heteroscedasticity)：**  
            觀察「殘差 vs. 預測值」散布圖，殘差隨著預測電量增加而顯著向外擴散（呈現右開口漏斗形狀）。這違反了經典 OLS 的同質變異數（Homoscedasticity）假設。
         2. **極端非對稱厚尾 (Heavy Right Tail)：**  
-           最大正殘差高達 **+689.14 Wh**，而最大負殘差僅 **-232.80 Wh**。在一般離峰時段，模型預測略微高估（中位數殘差為 -32.01 Wh）；但在瞬間大功率用電爆發時，點預測無法及時反應，產生巨大的正殘差。這也是採用 **Conformal 預測區間** 提供不確定性覆蓋保護的必要性所在。
+           最大正殘差高達 **{res_max_pos:+.2f} Wh**，而最大負殘差僅 **{res_max_neg:+.2f} Wh**。在一般離峰時段，模型預測略微高估（中位數殘差為 {res_median:.2f} Wh）；但在瞬間大功率用電爆發時，點預測無法及時反應，產生巨大的正殘差。這也是採用 **Conformal 預測區間** 提供不確定性覆蓋保護的必要性所在。
         """)
 
 # ==============================================================================
@@ -433,7 +433,7 @@ with tab4:
         hw = meta.get("conformal_half_width", 0)
         st.success(f"""
         🛡️ **95% Conformal Prediction Interval 半寬度：** `±{hw:.4f} Wh`  
-        總預測帶寬度為 `{hw * 2:.4f} Wh`。在測試集 2,961 筆實測中，達成 **{tm.get('interval_coverage', 0) * 100:.2f}%** 的實際覆蓋水準，非常貼合名義 95% 置信標準。
+        總預測帶寬度為 `{hw * 2:.4f} Wh`。在測試集 2,961 筆實測中，達成 **{tm.get('interval_coverage', 0) * 100:.2f}%** 的實際覆蓋水準，接近名義 95% 預測覆蓋目標；時間序列可能違反交換性，因此不保證新情境的覆蓋率。
         """)
 
         # 15 Selected features ordered

@@ -26,6 +26,11 @@ if 'custom_df' in st.session_state:
     else:
         target = st.selectbox('數值迴歸目標',targets,index=targets.index('Profit') if 'Profit' in targets else 0)
         st.warning('自訂資料使用固定隨機切分 60% / 20% / 20%；不適合時序、群組重複測量或存在目標洩漏的欄位。請先移除識別碼、日期與洩漏欄位。數值中位數補值、類別眾數補值／One-hot encoding 僅在訓練資料擬合。')
+        predictors = st.multiselect('使用的預測欄位（請移除識別碼／洩漏欄位）',[c for c in df if c != target],default=[c for c in df if c != target])
+        if not predictors:
+            st.info('請至少選擇一個預測欄位。')
+            st.stop()
+        df = df[predictors+[target]]
         fingerprint = hashlib.sha256(df.to_csv(index=False).encode()+target.encode()).hexdigest()[:12]
         render_explorer(df,target,key='custom_'+fingerprint)
     if st.button('清除資料與自訂模型'):

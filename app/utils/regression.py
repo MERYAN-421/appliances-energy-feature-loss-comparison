@@ -78,6 +78,8 @@ def prepare(df, target, chronological=False):
     pre = ColumnTransformer(transforms, verbose_feature_names_out=False)
     train = pre.fit_transform(X.iloc[ti])
     val = pre.transform(X.iloc[vi])
+    if train.shape[1] == 0:
+        raise ValueError('編碼後沒有有效特徵；請加入數值或非固定類別欄位。')
     if train.shape[1] > 40:
         raise ValueError('編碼後特徵上限為 40。')
     return dict(X=X, y=df[target].to_numpy(float), ti=ti, vi=vi, test=test, pre=pre,

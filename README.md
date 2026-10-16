@@ -201,3 +201,17 @@ streamlit run app/streamlit_app.py
 - **License**: MIT License.
 - **Dataset Authors**: Luis M. Candanedo, Veronique Feldheim, Dominique Deramaix (University of Mons, Belgium).
 - Kaggle Dataset: [Appliances Energy Prediction](https://www.kaggle.com/datasets/loveall/appliances-energy-prediction).
+
+## Final Regression Explorer
+
+The app now opens a Traditional Chinese regression explorer with a **50 Startups /
+Appliances** problem dropdown. It adds variable-K selection, validation curves,
+OLS interpretation, live prediction and error diagnostics, alongside a separate
+**Custom Dataset** CSV upload/public URL workspace. The original five research
+pages, 32-model outputs and calibrated best model remain available.
+
+Use Python 3.12 and install `requirements.txt`. Run `bash scripts/validate.sh`
+for the complete regression validation, then
+`.venv/bin/python -m streamlit run app/streamlit_app.py`.
+See [integration and deployment instructions](docs/FINAL_INTEGRATION.md) for
+splits, method limits, encoding, statistical caveats, and Streamlit Cloud setup.
