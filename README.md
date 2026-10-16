@@ -215,3 +215,12 @@ for the complete regression validation, then
 `.venv/bin/python -m streamlit run app/streamlit_app.py`.
 See [integration and deployment instructions](docs/FINAL_INTEGRATION.md) for
 splits, method limits, encoding, statistical caveats, and Streamlit Cloud setup.
+
+## GitHub Pages website
+
+A separate static site is available in `web/`, preserving the Python project.
+It includes both regression problems, model comparisons, browser-only live
+prediction, and custom CSV analysis using a browser Python worker.
+See [GitHub Pages activation and architecture](docs/GITHUB_PAGES.md).
+The deployment workflow is **Deploy Regression Studio to GitHub Pages**;
+repository administrators must select **Settings → Pages → GitHub Actions**.
