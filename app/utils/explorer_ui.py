@@ -20,7 +20,7 @@ def render_explorer(df,target,chronological=False,key='explorer',unit=''):
     st.dataframe(df.head(10),hide_index=True)
     st.caption(f'{len(df):,} 列 · {len(df.columns)} 欄 · 目標：{target} {unit}')
     try:
-        ctx = cached_context(df,target,chronological)
+        ctx = prepare(df,target,chronological) if key.startswith('custom') else cached_context(df,target,chronological)
         p = len(ctx['names'])
         methods = METHODS if len(ctx['train'])<=1000 and p<=8 else ['Lasso','RFE','ElasticNet','F-test']
         with st.form(key+'_fit'):
@@ -30,7 +30,12 @@ def render_explorer(df,target,chronological=False,key='explorer',unit=''):
         state_key = key+'_result'
         if run:
             with st.spinner('僅以訓練資料選特徵，計算驗證集表現…'):
-                table, fits = sweep(df,target,chronological,method)
+                if key.startswith('custom'):
+                    ks = list(range(1,p+1)) if p<=8 else sorted(set([1,3,5,10,15,20,25,p]) & set(range(1,p+1)))
+                    fits = [fit_model(ctx,method,k) for k in ks]
+                    table = pd.DataFrame([dict(K=k,**r['metrics']) for k,r in zip(ks,fits)])
+                else:
+                    table, fits = sweep(df,target,chronological,method)
                 st.session_state[state_key] = (table,fits,method)
         if state_key not in st.session_state:
             st.info('按「計算／更新 K 分析」開始。輸入修改後須重新計算，避免每次互動重訓。')
