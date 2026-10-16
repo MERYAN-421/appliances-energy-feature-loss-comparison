@@ -69,11 +69,11 @@ upload, navigation, training and live prediction. Test screenshots go to /tmp.
 Streamlit Community Cloud: select this repository, branch
 `feat/final-regression-explorer`, entrypoint `app/streamlit_app.py`, Python 3.12.
 No API keys are required. The bundled Startups example and original research
-pages/live model work without raw Appliances CSV. Appliances K analysis requires
-the raw CSV; it shows an explicit message if unavailable. For full Appliances K
-analysis on Community Cloud, provision that public CSV through the deployment's
-supported setup process; do not commit user-uploaded datasets or run the full
-research engine during startup. Public URL loading requires HTTPS access to
+pages/live model work without raw Appliances CSV. Appliances K analysis uses a local CSV when available, otherwise loads the
+author's public CSV in memory with SHA-256 verification and a 15 MB read cap.
+It requires outbound access to raw.githubusercontent.com. A failed download
+shows a recoverable error; original research pages remain available. Do not
+commit user-uploaded datasets or run the full research engine during startup. Public URL loading requires HTTPS access to
 raw.githubusercontent.com. The upload limit is 5 MB at both server and parser.
 
 The saved model requires scikit-learn 1.9.0, pinned in requirements. No source,

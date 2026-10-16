@@ -88,6 +88,15 @@ class RegressionTests(unittest.TestCase):
         next(b for b in at.button if b.label=='計算／更新 K 分析').click().run(timeout=60)
         self.assertFalse(at.exception)
 
+    def test_cloud_appliances_without_local_csv(self):
+        from unittest.mock import patch
+        with patch('utils.common.DATA_FILE',ROOT/'data/nonexistent-cloud-fixture.csv'):
+            at=AppTest.from_file(str(ROOT/'app/pages/explorer.py')).run(timeout=60)
+            at.selectbox[0].select('Appliances Energy — Energy Consumption Prediction').run(timeout=60)
+            self.assertFalse(at.exception)
+            self.assertFalse(at.error)
+            self.assertTrue(any('計算／更新 K 分析'==b.label for b in at.button))
+
     def test_appliances_workspace(self):
         path=ROOT/'data/energydata_complete.csv'
         if not path.exists():
