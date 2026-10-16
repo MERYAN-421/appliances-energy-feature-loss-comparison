@@ -174,10 +174,6 @@ def run(data_path: Path = DATA_PATH):
     final_pipeline = build_loss_pipeline(final_regressor)
     final_pipeline.fit(X_train_val[final_features], y_train_val)
 
-    # Save best model to joblib
-    joblib.dump(final_pipeline, BEST_MODEL_PATH)
-    print(f"Saved serialized best model: {BEST_MODEL_PATH}")
-
     # Calibrate on Calibration set
     print("\n[6/7] Calibrating 95% Conformal Prediction Interval on Calibration set...")
     y_cal_pred = final_pipeline.predict(X_cal[final_features])
@@ -189,6 +185,58 @@ def run(data_path: Path = DATA_PATH):
     test_metrics = compute_metrics(y_test, y_test_pred)
     coverage, mean_width, lower_95, upper_95 = evaluate_intervals(y_test, y_test_pred, half_width)
     lower_95_clipped = np.maximum(0.0, lower_95)  # Physical energy >= 0
+
+    # Task 2: Complete Model Bundle (Must be created after calibration)
+    bundle = {
+        "model": final_pipeline,
+        "selected_features": list(final_features),
+        "candidate_features": list(features),
+        "feature_selection": winner_selector,
+        "loss_function": winner_loss,
+        "conformal_half_width": float(half_width),
+        "target": TARGET,
+        "validation_metrics": {
+            "RMSE": float(best_row["RMSE"]),
+            "MAE": float(best_row["MAE"]),
+            "R2": float(best_row["R2"]),
+        },
+        "test_metrics": {
+            "RMSE": float(test_metrics["RMSE"]),
+            "MAE": float(test_metrics["MAE"]),
+            "R2": float(test_metrics["R2"]),
+            "interval_coverage": float(coverage),
+            "mean_interval_width": float(mean_width),
+        },
+    }
+    joblib.dump(bundle, BEST_MODEL_PATH)
+    print(f"Saved complete serialized best model bundle: {BEST_MODEL_PATH}")
+
+    # Output best_model_metadata.json
+    metadata = {
+        "best_model_name": f"{winner_selector} × {winner_loss}",
+        "feature_selection": winner_selector,
+        "loss_function": winner_loss,
+        "selected_features": list(final_features),
+        "candidate_features": list(features),
+        "conformal_half_width": float(half_width),
+        "target": TARGET,
+        "validation_metrics": {
+            "RMSE": float(best_row["RMSE"]),
+            "MAE": float(best_row["MAE"]),
+            "R2": float(best_row["R2"]),
+        },
+        "test_metrics": {
+            "RMSE": float(test_metrics["RMSE"]),
+            "MAE": float(test_metrics["MAE"]),
+            "R2": float(test_metrics["R2"]),
+            "interval_coverage": float(coverage),
+            "mean_interval_width": float(mean_width),
+        },
+    }
+    metadata_json_path = METRICS_DIR / "best_model_metadata.json"
+    with open(metadata_json_path, "w", encoding="utf-8") as f:
+        json.dump(metadata, f, indent=2, ensure_ascii=False)
+    print(f"Saved best model metadata JSON: {metadata_json_path}")
 
     print("\n" + "=" * 75)
     print("🎯 Untouched Final Test Set Performance:")

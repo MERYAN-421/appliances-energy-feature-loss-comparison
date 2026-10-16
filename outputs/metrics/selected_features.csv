@@ -173,7 +173,7 @@ LassoCV ranking,RH_4,True
 LassoCV ranking,T5,True
 LassoCV ranking,RH_5,True
 LassoCV ranking,T6,True
-LassoCV ranking,RH_6,False
+LassoCV ranking,RH_6,True
 LassoCV ranking,T7,False
 LassoCV ranking,RH_7,False
 LassoCV ranking,T8,False
@@ -184,7 +184,7 @@ LassoCV ranking,T_out,False
 LassoCV ranking,Press_mm_hg,False
 LassoCV ranking,RH_out,False
 LassoCV ranking,Windspeed,False
-LassoCV ranking,Visibility,True
+LassoCV ranking,Visibility,False
 LassoCV ranking,Tdewpoint,False
 LassoCV ranking,rv1,False
 LassoCV ranking,rv2,False

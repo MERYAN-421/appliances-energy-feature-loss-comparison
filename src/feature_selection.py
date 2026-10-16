@@ -1,16 +1,16 @@
-"""CRISP-DM Phase 4: Feature Selection Modules.
+"""CRISP-DM Phase 4: Feature Selection Modules (Zero CV Leakage Refined).
 
 Provides 7 feature selection methods + 1 baseline:
 1. Pearson correlation ranking (top K) - Filter
 2. F-test / SelectKBest (top K) - Filter
 3. Mutual Information (top K) - Filter (fitted on standardized data)
 4. Recursive Feature Elimination - RFE (top K) - Wrapper (fitted on standardized data)
-5. Forward Sequential Feature Selection - Forward SFS (top K) - Wrapper (TimeSeriesSplit CV)
-6. Backward Sequential Feature Selection - Backward SFS (top K) - Wrapper (TimeSeriesSplit CV)
-7. LassoCV coefficient ranking (top K) - Embedded (fitted on standardized data with TimeSeriesSplit)
+5. Forward Sequential Feature Selection - Forward SFS (top K) - Wrapper (Leak-free TimeSeriesSplit CV)
+6. Backward Sequential Feature Selection - Backward SFS (top K) - Wrapper (Leak-free TimeSeriesSplit CV)
+7. LassoCV coefficient ranking (top K) - Embedded (Leak-free TimeSeriesSplit CV with fold-by-fold scaling)
 8. Baseline (all 27 features, passthrough)
 
-All selectors include leakage-safe median imputation and appropriate standardization.
+All CV folds strictly fit Imputer and Scaler on their respective training fold indices only.
 """
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import (
     RFE,
     SequentialFeatureSelector,
@@ -27,8 +28,9 @@ from sklearn.feature_selection import (
     mutual_info_regression,
     r_regression,
 )
-from sklearn.linear_model import LassoCV, LinearRegression
+from sklearn.linear_model import Lasso, LinearRegression
 from sklearn.model_selection import TimeSeriesSplit
+from sklearn.metrics import mean_squared_error
 
 
 class PearsonTopK(BaseEstimator, TransformerMixin):
@@ -141,7 +143,16 @@ class RFETopK(BaseEstimator, TransformerMixin):
 
 
 class SFSTopK(BaseEstimator, TransformerMixin):
-    """Sequential Feature Selector (Forward or Backward) with TimeSeriesSplit and standardized inputs."""
+    """Sequential Feature Selector (Forward or Backward) with leak-free TimeSeriesSplit CV.
+    
+    Uses an internal pipeline:
+    Pipeline([
+        ("imputer", SimpleImputer(strategy="median")),
+        ("scaler", StandardScaler()),
+        ("regressor", LinearRegression())
+    ])
+    ensuring each fold in TimeSeriesSplit independently fits its own Imputer and Scaler.
+    """
 
     def __init__(self, k: int = 15, direction: str = "forward", cv_splits: int = 3):
         self.k = k
@@ -149,18 +160,22 @@ class SFSTopK(BaseEstimator, TransformerMixin):
         self.cv_splits = cv_splits
 
     def fit(self, X, y):
-        imp = SimpleImputer(strategy="median")
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(imp.fit_transform(np.asarray(X)))
+        X_arr = np.asarray(X)
         y_arr = np.asarray(y).ravel()
+        # Internal pipeline guarantees imputer & scaler are fitted strictly on each CV fold train slice
+        fold_pipeline = Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("regressor", LinearRegression()),
+        ])
         sfs = SequentialFeatureSelector(
-            estimator=LinearRegression(),
+            estimator=fold_pipeline,
             n_features_to_select=self.k,
             direction=self.direction,
             cv=TimeSeriesSplit(n_splits=self.cv_splits),
             n_jobs=1,
         )
-        sfs.fit(X_scaled, y_arr)
+        sfs.fit(X_arr, y_arr)
         self.support_ = sfs.support_
         return self
 
@@ -175,7 +190,10 @@ class SFSTopK(BaseEstimator, TransformerMixin):
 
 
 class LassoCVTopK(BaseEstimator, TransformerMixin):
-    """Rank predictors by standardized LassoCV coefficient magnitude |coef_i| using TimeSeriesSplit."""
+    """Rank predictors by standardized Lasso coefficient magnitude using leak-free TimeSeriesSplit CV.
+
+    Each fold independently fits SimpleImputer and StandardScaler on the fold training split only.
+    """
 
     def __init__(self, k: int = 15, cv_splits: int = 3, max_iter: int = 10000, random_state: int = 42):
         self.k = k
@@ -184,20 +202,38 @@ class LassoCVTopK(BaseEstimator, TransformerMixin):
         self.random_state = random_state
 
     def fit(self, X, y):
-        imp = SimpleImputer(strategy="median")
-        scaler = StandardScaler()
-        X_scaled = scaler.fit_transform(imp.fit_transform(np.asarray(X)))
+        X_arr = np.asarray(X)
         y_arr = np.asarray(y).ravel()
-        self.estimator_ = LassoCV(
-            cv=TimeSeriesSplit(n_splits=self.cv_splits),
-            max_iter=self.max_iter,
-            random_state=self.random_state,
-            alphas=50,
-        )
-        self.estimator_.fit(X_scaled, y_arr)
+        alphas = np.logspace(-3, 1, 30)
+        tscv = TimeSeriesSplit(n_splits=self.cv_splits)
+        cv_errors = np.zeros(len(alphas))
+
+        # Fold-by-fold cross-validation without preprocessing leakage
+        for train_idx, val_idx in tscv.split(X_arr):
+            imp = SimpleImputer(strategy="median")
+            scaler = StandardScaler()
+            X_tr = scaler.fit_transform(imp.fit_transform(X_arr[train_idx]))
+            y_tr = y_arr[train_idx]
+            X_va = scaler.transform(imp.transform(X_arr[val_idx]))
+            y_va = y_arr[val_idx]
+            for i, a in enumerate(alphas):
+                m = Lasso(alpha=a, max_iter=self.max_iter, random_state=self.random_state)
+                m.fit(X_tr, y_tr)
+                pred = m.predict(X_va)
+                cv_errors[i] += mean_squared_error(y_va, pred)
+
+        self.best_alpha_ = float(alphas[np.argmin(cv_errors)])
+
+        # Final fit on the complete training set with full imputer + scaler
+        imp_full = SimpleImputer(strategy="median")
+        scaler_full = StandardScaler()
+        X_full_scaled = scaler_full.fit_transform(imp_full.fit_transform(X_arr))
+        self.estimator_ = Lasso(alpha=self.best_alpha_, max_iter=self.max_iter, random_state=self.random_state)
+        self.estimator_.fit(X_full_scaled, y_arr)
+
         self.importances_ = np.abs(self.estimator_.coef_)
         top = np.argsort(-self.importances_, kind="stable")[: self.k]
-        self.support_ = np.zeros(X_scaled.shape[1], dtype=bool)
+        self.support_ = np.zeros(X_arr.shape[1], dtype=bool)
         self.support_[top] = True
         return self
 
